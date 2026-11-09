@@ -556,14 +556,15 @@ class NVControlGUI(QMainWindow):
             self.run_elevated_command(["--reset"])
 
     def run_elevated_command(self, args: List[str]) -> None:
-        # Determine execution command
-        nvcontrol_bin = shutil.which("nvcontrol")
-        if not nvcontrol_bin:
-            # Fall back to python -m nvcontrol.cli
-            py_bin = sys.executable
-            cli_cmd = [py_bin, "-m", "nvcontrol.cli", *args]
-        else:
-            cli_cmd = [nvcontrol_bin, *args]
+        # Ensure that when running under pkexec/sudo as root, python can reliably import nvcontrol
+        package_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        bootstrap = (
+            "import sys; "
+            f"sys.path.insert(0, {repr(package_root)}); "
+            "from nvcontrol.cli import main; "
+            "sys.exit(main())"
+        )
+        cli_cmd = [sys.executable, "-c", bootstrap, *args]
 
         if os.geteuid() == 0:
             full_cmd = cli_cmd
