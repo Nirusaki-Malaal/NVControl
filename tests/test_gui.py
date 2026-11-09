@@ -50,3 +50,13 @@ def test_gui_mode_selection(qapp):
     assert window.options_frame.isVisible()
     assert not window.hybrid_opts_widget.isVisible()
     assert window.nvidia_opts_widget.isVisible()
+
+
+@pytest.mark.skipif(not HAS_PYSIDE6, reason="PySide6 is not installed")
+def test_gui_no_emojis(qapp):
+    import re
+    window = NVControlGUI()
+    emoji_pattern = re.compile(r"[\U00010000-\U0010ffff\u2600-\u26ff\u2700-\u27bf]")
+    assert not emoji_pattern.search(window.windowTitle())
+    for btn in window.mode_group.buttons():
+        assert not emoji_pattern.search(btn.text())

@@ -4,50 +4,51 @@
   <img alt="NVControl Logo" src="https://github.com/bayasdev/envycontrol/raw/main/logos/light.png" height="100px">
 </picture>
 <br>
-<h3>Optimus Made Easy — Modernized for NVIDIA 615+ & Blackwell</h3>
+<h3>Optimus Made Easy - Modernized for NVIDIA 615+, Wayland, and Blackwell</h3>
 </div>
 <br>
 
-# 👁‍🗨 NVControl (EnvyControl Next)
+# NVControl (EnvyControl Next)
 
-**NVControl** is a fast, modernized CLI tool for managing GPU switching and power states on NVIDIA Optimus laptops (hybrid Intel + NVIDIA or AMD + NVIDIA) under Linux.
+**NVControl** is a fast, modernized CLI and native Wayland GUI tool for managing GPU switching and power states on NVIDIA Optimus laptops (hybrid Intel + NVIDIA or AMD + NVIDIA) under Linux.
 
-It is the maintained and extended successor to [EnvyControl](https://github.com/bayasdev/envycontrol), engineered to support modern Linux distributions, Wayland compositors, the latest GPU architectures (**Blackwell RTX 50 Series** and **Ada Lovelace RTX 40 Series**), and the **NVIDIA 615+ driver family**.
+It is the maintained and extended successor to [EnvyControl](https://github.com/bayasdev/envycontrol), engineered to support modern Linux distributions, Wayland compositors (Niri, Noctalia, Hyprland, Sway), the latest GPU architectures (**Blackwell RTX 50 Series** and **Ada Lovelace RTX 40 Series**), and the **NVIDIA 615+ driver family**.
 
 Both `nvcontrol` and `envycontrol` CLI commands are provided for 100% drop-in compatibility.
 
 ---
 
-### 📖 License
+### License
 
 NVControl is free and open-source software released under the [MIT](LICENSE) license.
 
-### ⚠️ Disclaimer
+### Disclaimer
 
 **This software is provided 'as-is' without any express or implied warranty.**  
 Custom X.org configuration files may get replaced when switching to NVIDIA mode.
 
 ---
 
-## ✨ Features & Improvements
+## Features and Improvements
 
-- ⚡ **NVIDIA 615+ Driver & Open Kernel Modules Ready**: Native support for the modern `nvidia-open` driver stack and module parameters.
-- 🚀 **Latest Microarchitecture Support**: Full support for **Blackwell (RTX 50-series)**, **Ada Lovelace (RTX 40-series)**, Ampere (RTX 30-series), and Turing.
-- 🪟 **Wayland First-Class Support**:
+- **NVIDIA 615+ Driver & Open Kernel Modules Ready**: Native support for the modern `nvidia-open` driver stack and module parameters.
+- **Latest Microarchitecture Support**: Full support for **Blackwell (RTX 50-series)**, **Ada Lovelace (RTX 40-series)**, Ampere (RTX 30-series), and Turing.
+- **Wayland & Noctalia First-Class Support**:
   - Automatically configures `nvidia-drm.modeset=1 fbdev=1` required for smooth Wayland rendering and DRM consoles.
   - `--preserve-video-memory`: Preserves VRAM across system sleep/suspend to eliminate freezes, session crashes, and resume corruption.
-- 🔋 **Zero Zombie dGPU Power Draw**:
+  - Native Wayland Qt6/PySide6 GUI with Noctalia Material Dark palette styling and zero emoji clutter.
+- **Zero Zombie dGPU Power Draw**:
   - Enhanced udev power rules trigger on `add|bind|change` to prevent the discrete GPU from re-enumerating into an unmanaged high-power state after ACPI suspend/resume in integrated mode.
-- ⚙️ **Dynamic & Non-Interactive Initramfs Generation**:
+- **Dynamic & Non-Interactive Initramfs Generation**:
   - Intelligently detects the active initramfs generator (`dracut`, `dracut-rebuild`, `mkinitcpio`, `limine-mkinitcpio`, `booster`, `update-initramfs`, `make-initrd`, `rpm-ostree`).
   - Runs with non-blocking execution to avoid hanging indefinitely on interactive prompts (e.g. Limine bootloader).
-- 📊 **Detailed Hardware Diagnostics**: Built-in `--status` command reveals GPU models, microarchitecture family, driver version, runtime power state, display manager, and Wayland/X11 session.
-- 🖥️ **Modern Desktop GUI**: Beautiful, native Qt/PySide6 graphical interface (`nvcontrol-gui` or `nvcontrol --gui`) with live diagnostics, one-click mode switching, terminal log streaming, and desktop entry.
-- 🐍 **Modern Python Packaging**: Packaged via PEP 517/PEP 621 with `pyproject.toml` and Nix flake support.
+- **Detailed Hardware Diagnostics**: Built-in `--status` command reveals GPU models, microarchitecture family, driver version, runtime power state, display manager, and Wayland/X11 session.
+- **Modern Desktop GUI**: Clean, native Wayland graphical interface (`nvcontrol-gui` or `nvcontrol --gui`) with live diagnostics, one-click mode switching, terminal log streaming, and desktop entry.
+- **Modern Python Packaging**: Packaged via PEP 517/PEP 621 with `pyproject.toml`, Arch Linux `PKGBUILD`, and Nix flake support.
 
 ---
 
-## 📖 Graphics Modes
+## Graphics Modes
 
 ### 1. Integrated Mode (`-s integrated`)
 - Discrete NVIDIA GPU is completely powered down via kernel udev rules to maximize battery life.
@@ -71,7 +72,7 @@ Custom X.org configuration files may get replaced when switching to NVIDIA mode.
 
 ---
 
-## 🖥️ Graphical User Interface (GUI)
+## Graphical User Interface (GUI)
 
 Launch the native graphical user interface:
 
@@ -90,10 +91,10 @@ The GUI offers:
 
 ---
 
-## ⚡️ Usage
+## Usage
 
 ```text
-usage: nvcontrol [-h] [-v] [-q] [--status] [-s MODE] [--dm DISPLAY_MANAGER]
+usage: nvcontrol [-h] [-v] [-q] [--status] [--gui] [-s MODE] [--dm DISPLAY_MANAGER]
                  [--force-comp] [--coolbits [VALUE]] [--rtd3 [VALUE]]
                  [--preserve-video-memory] [--no-fbdev] [--use-nvidia-current]
                  [--reset-sddm] [--reset] [--cache-create] [--cache-delete]
@@ -104,6 +105,7 @@ options:
   -v, --version         Output the current version
   -q, --query           Query the current graphics mode
   --status, --info      Display detailed hardware, driver version, architecture, and power status
+  --gui                 Launch the graphical user interface
   -s MODE, --switch MODE
                         Switch graphics mode (integrated, hybrid, nvidia)
   --dm DISPLAY_MANAGER  Manually specify Display Manager (gdm, gdm3, sddm, lightdm)
@@ -124,7 +126,7 @@ options:
 
 ---
 
-## 💡 Examples
+## Examples
 
 ### Check Detailed System & GPU Status:
 ```bash
@@ -184,13 +186,20 @@ sudo nvcontrol --reset
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### From Source (pip / pyproject)
 ```bash
 git clone https://github.com/Nirusaki-Malaal/NVControl.git
 cd NVControl
-sudo pip install .
+pip install --user -e . --break-system-packages
+```
+
+### Arch Linux (PKGBUILD)
+```bash
+git clone https://github.com/Nirusaki-Malaal/NVControl.git
+cd NVControl
+makepkg -si
 ```
 
 ### Using Nix Flakes
@@ -202,6 +211,6 @@ nix run github:Nirusaki-Malaal/NVControl#nvcontrol -- --status
 
 ---
 
-## 🤝 Upstream Acknowledgment
+## Upstream Acknowledgment
 
 NVControl is based on the foundational work by [Victor Bayas](https://github.com/bayasdev) ([EnvyControl](https://github.com/bayasdev/envycontrol)) and incorporates fixes and contributions from the open-source community.
