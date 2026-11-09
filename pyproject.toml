@@ -51,6 +51,7 @@ dev = [
 [project.scripts]
 nvcontrol = "nvcontrol.cli:main"
 envycontrol = "nvcontrol.cli:main"
+nvcontrol-gui = "nvcontrol.gui:main"
 
 [project.urls]
 Homepage = "https://github.com/Nirusaki-Malaal/NVControl"

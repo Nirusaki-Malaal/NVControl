@@ -85,6 +85,11 @@ def build_parser() -> argparse.ArgumentParser:
         help='Display detailed hardware, driver version, architecture, and power status'
     )
     parser.add_argument(
+        '--gui',
+        action='store_true',
+        help='Launch the NVControl graphical user interface'
+    )
+    parser.add_argument(
         '-s', '--switch',
         type=str,
         metavar='MODE',
@@ -192,6 +197,11 @@ def main(argv: Optional[List[str]] = None) -> None:
 
     if args.status:
         print_status_report()
+        return
+
+    if args.gui:
+        from nvcontrol.gui import main as gui_main
+        gui_main()
         return
 
     if args.cache_create:

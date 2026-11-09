@@ -42,6 +42,7 @@ Custom X.org configuration files may get replaced when switching to NVIDIA mode.
   - Intelligently detects the active initramfs generator (`dracut`, `dracut-rebuild`, `mkinitcpio`, `limine-mkinitcpio`, `booster`, `update-initramfs`, `make-initrd`, `rpm-ostree`).
   - Runs with non-blocking execution to avoid hanging indefinitely on interactive prompts (e.g. Limine bootloader).
 - 📊 **Detailed Hardware Diagnostics**: Built-in `--status` command reveals GPU models, microarchitecture family, driver version, runtime power state, display manager, and Wayland/X11 session.
+- 🖥️ **Modern Desktop GUI**: Beautiful, native Qt/PySide6 graphical interface (`nvcontrol-gui` or `nvcontrol --gui`) with live diagnostics, one-click mode switching, terminal log streaming, and desktop entry.
 - 🐍 **Modern Python Packaging**: Packaged via PEP 517/PEP 621 with `pyproject.toml` and Nix flake support.
 
 ---
@@ -67,6 +68,25 @@ Custom X.org configuration files may get replaced when switching to NVIDIA mode.
 - Discrete NVIDIA GPU is used as the primary display controller.
 - Maximum performance for multi-monitor setups and dedicated desktop docks.
 - Supports Coolbits overclocking (`--coolbits`) and ForceCompositionPipeline (`--force-comp`).
+
+---
+
+## 🖥️ Graphical User Interface (GUI)
+
+Launch the native graphical user interface:
+
+```bash
+nvcontrol-gui
+# or
+nvcontrol --gui
+```
+
+The GUI offers:
+- **Live System Card**: Current mode, iGPU & dGPU model, microarchitecture (Ada Lovelace, Blackwell, etc.), active driver version, and runtime power status.
+- **Visual Mode Switcher**: Quick-switch between **Integrated**, **Hybrid (PRIME)**, and **Dedicated NVIDIA** modes with real-time tuning options.
+- **Polkit Privilege Escalation**: Safely executes privileged operations via `pkexec` without needing to run the whole graphical interface as root.
+- **Live Command Terminal**: Real-time streaming logs as `initramfs` and kernel configurations are generated.
+- **One-Click Reboot Prompt**: Clean confirmation dialog to reboot once switching completes.
 
 ---
 

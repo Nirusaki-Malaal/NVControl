@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=NVControl
+Comment=NVIDIA Optimus Graphics Mode Switcher
+Exec=nvcontrol-gui
+Icon=nvcontrol
+Terminal=false
+Type=Application
+Categories=System;Settings;HardwareSettings;
+Keywords=nvidia;optimus;prime;gpu;graphics;
+StartupNotify=true

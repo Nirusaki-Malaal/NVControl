@@ -66,3 +66,9 @@ def test_parser_no_fbdev():
     parser = build_parser()
     args = parser.parse_args(['-s', 'hybrid', '--no-fbdev'])
     assert args.no_fbdev is True
+
+
+def test_parser_gui():
+    parser = build_parser()
+    args = parser.parse_args(['--gui'])
+    assert args.gui is True
