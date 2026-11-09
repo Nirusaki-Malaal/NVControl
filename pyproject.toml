@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nvcontrol"
+version = "3.6.0"
+description = "Modern GPU switching for NVIDIA Optimus laptops under Linux (Ada Lovelace, Blackwell & Driver 615+ ready)"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Nirusaki-Malaal" },
+    { name = "Victor Bayas", email = "victorsbayas@gmail.com" }
+]
+requires-python = ">=3.8"
+keywords = [
+    "nvidia",
+    "optimus",
+    "prime",
+    "gpu",
+    "linux",
+    "wayland",
+    "rtd3",
+    "nvcontrol",
+    "envycontrol"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: System :: Hardware",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "flake8>=6.0.0",
+    "build>=0.10.0",
+]
+
+[project.scripts]
+nvcontrol = "nvcontrol.cli:main"
+envycontrol = "nvcontrol.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Nirusaki-Malaal/NVControl"
+Repository = "https://github.com/Nirusaki-Malaal/NVControl.git"
+Issues = "https://github.com/Nirusaki-Malaal/NVControl/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nvcontrol*"]

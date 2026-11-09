@@ -1,4 +1,23 @@
-__pycache__
-.idea/
-result/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment
+.envrc
 .direnv/
+.venv/
+venv/
+result/
+.idea/
+.vscode/

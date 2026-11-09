@@ -1,329 +1,187 @@
-> [!IMPORTANT]
-> **Project Status**  
-> 
-> Hi! I'm [Victor](https://github.com/bayasdev), the original author of EnvyControl. I built this over a weekend in 2021 because there wasn't any reliable solution to properly disable the Nvidia GPU that was draining my Acer Predator Helios 300's battery. I used it heavily back then, but I switched to macOS full-time and no longer run Linux daily, so I can't provide timely bug fixes, new features, or real support anymore.
-> 
-> That said, EnvyControl still works well for many people on recent distros, thanks to the many PRs I've received over the years. I'm happy to transfer ownership to an active OSS initiative focused on building tools for the greater Linux ecosystem.
-> 
-> Thanks for all the support over the years! ❤️
->
-> PS: If I built this today, I'd probably use Go or Rust :)
-
 <div align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/bayasdev/envycontrol/raw/main/logos/dark.png">
-  <img alt="EnvyControl Logo" src="https://github.com/bayasdev/envycontrol/raw/main/logos/light.png" height="100px">
+  <img alt="NVControl Logo" src="https://github.com/bayasdev/envycontrol/raw/main/logos/light.png" height="100px">
 </picture>
 <br>
-Optimus made easy
+<h3>Optimus Made Easy — Modernized for NVIDIA 615+ & Blackwell</h3>
 </div>
 <br>
 
-# 👁‍🗨 EnvyControl
+# 👁‍🗨 NVControl (EnvyControl Next)
 
-EnvyControl is a CLI tool that provides an easy way to switch between GPU modes on Nvidia Optimus systems (i.e laptops with hybrid Intel + Nvidia or AMD + Nvidia graphics configurations) under Linux.
+**NVControl** is a fast, modernized CLI tool for managing GPU switching and power states on NVIDIA Optimus laptops (hybrid Intel + NVIDIA or AMD + NVIDIA) under Linux.
+
+It is the maintained and extended successor to [EnvyControl](https://github.com/bayasdev/envycontrol), engineered to support modern Linux distributions, Wayland compositors, the latest GPU architectures (**Blackwell RTX 50 Series** and **Ada Lovelace RTX 40 Series**), and the **NVIDIA 615+ driver family**.
+
+Both `nvcontrol` and `envycontrol` CLI commands are provided for 100% drop-in compatibility.
+
+---
 
 ### 📖 License
 
-EnvyControl is free and open-source software released under the [MIT](https://github.com/bayasdev/envycontrol/blob/main/LICENSE) license.
+NVControl is free and open-source software released under the [MIT](LICENSE) license.
 
 ### ⚠️ Disclaimer
 
-**This software is provided 'as-is' without any express or implied warranty.**
+**This software is provided 'as-is' without any express or implied warranty.**  
+Custom X.org configuration files may get replaced when switching to NVIDIA mode.
 
-Keep in mind any custom X.org configuration may get deleted or overwritten when switching modes.
+---
 
-## ✨ Features
+## ✨ Features & Improvements
 
-- 🐍 Written in Python 3+ for portability and compatibility
-- 🐧 Works across all major Linux distros ([tested distros](https://github.com/bayasdev/envycontrol/wiki/Frequently-Asked-Questions#tested-distros))
-- 🖥️ Supports GDM, SDDM and LightDM display managers ([manual setup instructions](https://github.com/bayasdev/envycontrol/wiki/Frequently-Asked-Questions#what-to-do-if-my-display-manager-is-not-supported) also available)
-- 🔋 Save battery with integrated graphics mode
-- 💻 PCI-Express Runtime D3 (RTD3) Power Management support for Turing and later
-- 🎮 Coolbits support for GPU overclocking
-- 🔥 Fix screen tearing with ForceCompositionPipeline
+- ⚡ **NVIDIA 615+ Driver & Open Kernel Modules Ready**: Native support for the modern `nvidia-open` driver stack and module parameters.
+- 🚀 **Latest Microarchitecture Support**: Full support for **Blackwell (RTX 50-series)**, **Ada Lovelace (RTX 40-series)**, Ampere (RTX 30-series), and Turing.
+- 🪟 **Wayland First-Class Support**:
+  - Automatically configures `nvidia-drm.modeset=1 fbdev=1` required for smooth Wayland rendering and DRM consoles.
+  - `--preserve-video-memory`: Preserves VRAM across system sleep/suspend to eliminate freezes, session crashes, and resume corruption.
+- 🔋 **Zero Zombie dGPU Power Draw**:
+  - Enhanced udev power rules trigger on `add|bind|change` to prevent the discrete GPU from re-enumerating into an unmanaged high-power state after ACPI suspend/resume in integrated mode.
+- ⚙️ **Dynamic & Non-Interactive Initramfs Generation**:
+  - Intelligently detects the active initramfs generator (`dracut`, `dracut-rebuild`, `mkinitcpio`, `limine-mkinitcpio`, `booster`, `update-initramfs`, `make-initrd`, `rpm-ostree`).
+  - Runs with non-blocking execution to avoid hanging indefinitely on interactive prompts (e.g. Limine bootloader).
+- 📊 **Detailed Hardware Diagnostics**: Built-in `--status` command reveals GPU models, microarchitecture family, driver version, runtime power state, display manager, and Wayland/X11 session.
+- 🐍 **Modern Python Packaging**: Packaged via PEP 517/PEP 621 with `pyproject.toml` and Nix flake support.
 
-## 📖 Graphics modes
+---
 
-### Integrated
+## 📖 Graphics Modes
 
-- The integrated Intel or AMD iGPU is used exclusively
-- Nvidia dGPU is turned off to reduce power consumption
-- External screens cannot be used if the video ports are wired to the dGPU
+### 1. Integrated Mode (`-s integrated`)
+- Discrete NVIDIA GPU is completely powered down via kernel udev rules to maximize battery life.
+- Only the integrated Intel or AMD GPU is active.
+- Re-enumeration on sleep/wake is suppressed to prevent battery drain.
+- Note: External monitors directly wired to the dGPU will not display video in integrated mode.
 
-### Hybrid
+### 2. Hybrid Mode (`-s hybrid`)
+- Enables NVIDIA PRIME render offloading: run games and 3D workloads on the dGPU on-demand using `prime-run` or standard PRIME variables.
+- Supports PCI-Express Runtime D3 (RTD3) Power Management:
+  - `--rtd3 0`: Disabled
+  - `--rtd3 1`: Coarse-grained
+  - `--rtd3 2`: Fine-grained (default)
+  - `--rtd3 3`: Fine-grained with video memory power-down (supported on Ada Lovelace and Blackwell)
+- Optional `--preserve-video-memory` ensures stable sleep/resume under Wayland.
 
-- Enables PRIME render offloading
-- RTD3 allows the dGPU to be dynamically turned off when not in use
-  - Available choices for the `--rtd3` flag (based on the [official documentation](http://us.download.nvidia.com/XFree86/Linux-x86_64/530.30.02/README/dynamicpowermanagement.html))
-    - `0` disabled
-    - `1` coarse-grained
-    - `2` fine-grained (default value if you don't provide one)
-    - `3` fine-grained for Ampere and later
-  - Only works in Turing and later
-- Performance on external screens might be reduced
+### 3. Nvidia Mode (`-s nvidia`)
+- Discrete NVIDIA GPU is used as the primary display controller.
+- Maximum performance for multi-monitor setups and dedicated desktop docks.
+- Supports Coolbits overclocking (`--coolbits`) and ForceCompositionPipeline (`--force-comp`).
 
-### Nvidia
-
-- The Nvidia dGPU is used exclusively
-- Higher graphical performance and higher power consumption
-- Recommended when working with external screens
-  - If facing screen tearing enable ForceCompositionPipeline with the `--force-comp` flag
-- Allows overlocking (not recommended) with the `--coolbits` flag
-  - The default value is `28` bits however it can be manually adjusted according to this [guide](https://wiki.archlinux.org/title/NVIDIA/Tips_and_tricks#Overclocking_and_cooling)
-- Wayland sessions default to hybrid mode
+---
 
 ## ⚡️ Usage
 
-```
-usage: envycontrol.py [-h] [-v] [-q] [-s MODE] [--dm DISPLAY_MANAGER] [--force-comp] [--coolbits [VALUE]] [--rtd3 [VALUE]] [--reset-sddm] [--reset] [--verbose]
+```text
+usage: nvcontrol [-h] [-v] [-q] [--status] [-s MODE] [--dm DISPLAY_MANAGER]
+                 [--force-comp] [--coolbits [VALUE]] [--rtd3 [VALUE]]
+                 [--preserve-video-memory] [--no-fbdev] [--use-nvidia-current]
+                 [--reset-sddm] [--reset] [--cache-create] [--cache-delete]
+                 [--cache-query] [--verbose]
 
 options:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
   -v, --version         Output the current version
   -q, --query           Query the current graphics mode
+  --status, --info      Display detailed hardware, driver version, architecture, and power status
   -s MODE, --switch MODE
-                        Switch the graphics mode. Available choices: integrated, hybrid, nvidia
-  --dm DISPLAY_MANAGER  Manually specify your Display Manager for Nvidia mode. Available choices: gdm, gdm3, sddm, lightdm
+                        Switch graphics mode (integrated, hybrid, nvidia)
+  --dm DISPLAY_MANAGER  Manually specify Display Manager (gdm, gdm3, sddm, lightdm)
   --force-comp          Enable ForceCompositionPipeline on Nvidia mode
-  --coolbits [VALUE]    Enable Coolbits on Nvidia mode. Default if specified: 28
-  --rtd3 [VALUE]        Setup PCI-Express Runtime D3 (RTD3) Power Management on Hybrid mode. Available choices: 0, 1, 2, 3. Default if specified: 2
-  --use-nvidia-current  Use nvidia-current instead of nvidia for kernel modules
-  --reset-sddm          Restore default Xsetup file
-  --reset               Revert changes made by EnvyControl
-  --cache-create        Create cache used by EnvyControl; only works in hybrid mode
-  --cache-delete        Delete cache created by EnvyControl
-  --cache-query         Show cache created by EnvyControl
-  --verbose             Enable verbose mode
+  --coolbits [VALUE]    Enable Coolbits on Nvidia mode. Default if specified without value: 28
+  --rtd3 [VALUE]        Setup RTD3 Power Management on Hybrid mode (0, 1, 2, 3). Default: 2
+  --preserve-video-memory
+                        Preserve video memory across suspend/resume (recommended for Wayland)
+  --no-fbdev            Do not enable nvidia-drm.fbdev=1
+  --use-nvidia-current  Use nvidia-current instead of nvidia for kernel modules (Debian)
+  --reset-sddm          Restore default SDDM Xsetup file
+  --reset               Revert all changes made by NVControl/EnvyControl
+  --cache-create        Create cache used by NVControl (hybrid mode only)
+  --cache-delete        Delete cache created by NVControl
+  --cache-query         Show cache created by NVControl
+  --verbose             Enable verbose debug output
 ```
 
-### Some examples
+---
 
-Set graphics mode to integrated:
+## 💡 Examples
 
+### Check Detailed System & GPU Status:
+```bash
+nvcontrol --status
 ```
-sudo envycontrol -s integrated
-```
-
-Set graphics mode to hybrid and enable fine-grained power control:
-
-```
-sudo envycontrol -s hybrid --rtd3
-```
-
-Set graphics mode to nvidia, enable ForceCompositionPipeline and Coolbits with a value of 24:
-
-```
-sudo envycontrol -s nvidia --force-comp --coolbits 24
-```
-
-Set current graphics mode to nvidia and specify to setup LightDM display manager
-
-```
-sudo envycontrol -s nvidia --dm lightdm
-```
-
-Query the current graphics mode:
-
-```
-envycontrol --query
+*Example Output:*
+```text
+========================================
+       NVControl v3.6.0 Status
+========================================
+Current Mode:         HYBRID
+Session Type:         wayland
+Display Manager:      sddm
+----------------------------------------
+iGPU Vendor:          Intel
+iGPU Model:           Intel Corporation Alder Lake-S [UHD Graphics]
+----------------------------------------
+dGPU Model:           NVIDIA Corporation AD107M [GeForce RTX 4050 Max-Q / Mobile]
+dGPU Architecture:    Ada Lovelace (RTX 40 Series)
+dGPU PCI Bus:         PCI:1:0:0
+NVIDIA Driver:        615.78.08
+Runtime Power Status: active
+========================================
 ```
 
-Revert all changes made by EnvyControl:
-
-```
-sudo envycontrol --reset
-```
-
-### Caching added with 3.4.0
-A cache was added in version 3.4.0. The main purpose is to cache the Nvidia PCI bus ID so that a transition from integrated mode directly to nvidia mode is possible. A reboot is required as usual so the changes can take effect.
-
-#### Cache file location
-
-Note that these are just helpers to accomodate maintenance tasks. The cache is created automatically whenever switching away from hybrid mode - to integrated or nvidia mode.
-
-```python
-CACHE_FILE_PATH = '/var/cache/envycontrol/cache.json'
+### Switch to Integrated Mode (Battery Saver):
+```bash
+sudo nvcontrol -s integrated
 ```
 
-#### File format
-
-```json
-{
-  "nvidia_gpu_pci_bus": "PCI:1:0:0"
-}
+### Switch to Hybrid Mode with RTD3 Power Management:
+```bash
+sudo nvcontrol -s hybrid --rtd3
 ```
 
-The cache is automatically re-created whenever a switch from hybrid mode is performed.
-
-#### Caching command line examples
-
-Create cache used by EnvyControl; only works in hybrid mode
-
-```
-sudo envycontrol --cache-create
+### Switch to Hybrid Mode with Wayland Video Memory Preservation:
+```bash
+sudo nvcontrol -s hybrid --rtd3 2 --preserve-video-memory
 ```
 
-When create cache is called when the system is in integrated or nvidia modes
-
-```
-sudo envycontrol --cache-create
-...
-ValueError: --cache-create requires that the system be in the hybrid Optimus mode
+### Switch to Dedicated NVIDIA Mode:
+```bash
+sudo nvcontrol -s nvidia
 ```
 
-
-Delete cache created by EnvyControl
-
-```
-sudo envycontrol --cache-delete
+### Query Active Mode:
+```bash
+nvcontrol -q
 ```
 
-Show cache created by EnvyControl
-
-```
-sudo envycontrol --cache-query
-```
-
-
-## ⬇️ Getting EnvyControl
-
-### Arch Linux ([AUR](https://aur.archlinux.org/packages/envycontrol))
-
-1. `yay -S envycontrol`
-2. Run `sudo envycontrol -s <MODE>` to switch graphics modes
-
-### Fedora
-
-Use the [COPR](https://copr.fedorainfracloud.org/coprs/sunwire/envycontrol/) maintained by [@sunwire](https://github.com/sunwire)
-
-1. Enable the repository with `sudo dnf copr enable sunwire/envycontrol`
-2. `sudo dnf install python3-envycontrol`
-3. Run `sudo envycontrol -s <MODE>` to switch graphics modes
-
-### Enterprise Linux + EPEL 9 (RHEL 9, Rocky Linux 9, CentOS Stream 9, Alma Linux 9 etc.)
-
-Use the [COPR](https://copr.fedorainfracloud.org/coprs/thonkdifferent/envycontrol/) maintained by [@thonkdifferent](https://github.com/thonkdifferent)
-
-1. Enable the repository with `sudo dnf copr enable thonkdifferent/envycontrol`
-2. `sudo dnf install python3-envycontrol`
-3. Run `sudo envycontrol -s <MODE>` to switch graphics modes
-
-### Ubuntu / Debian
-
-Since [PEP668 adoption](https://www.linuxuprising.com/2023/03/next-debianubuntu-releases-will-likely.html) is no longer possible to install pip packages outside a virtual environment, instead use the provided deb package:
-
-1. Go to the [latest release page](https://github.com/bayasdev/envycontrol/releases/latest)
-2. Download the attached `python3-envycontrol_version.deb` package
-3. Install it with `sudo apt -y install ./python3-envycontrol_version.deb`
-4. Run `sudo envycontrol -s <MODE>` to switch graphics modes
-
-### Nixos
-
-If you're using Nix Flakes:
-
-- Script could be executed using this command:
-
-```sh
-nix run github:bayasdev/envycontrol -- <args>
+### Reset All Configurations:
+```bash
+sudo nvcontrol --reset
 ```
 
-- For system-wide installation, add this flake to inputs in your configuration:
+*(You can also substitute `envycontrol` for `nvcontrol` in all commands.)*
 
-```sh
-inputs = {
-  # ...
-  envycontrol.url = github:bayasdev/envycontrol
-};
+---
+
+## 📦 Installation
+
+### From Source (pip / pyproject)
+```bash
+git clone https://github.com/Nirusaki-Malaal/NVControl.git
+cd NVControl
+sudo pip install .
 ```
 
-And mention it in the packages like this:
-
-```sh
-envycontrol.packages.x86_64-linux.default
+### Using Nix Flakes
+```bash
+nix profile install github:Nirusaki-Malaal/NVControl
+# or run directly:
+nix run github:Nirusaki-Malaal/NVControl#nvcontrol -- --status
 ```
 
-Thanks to [@ITesserakt](https://github.com/ITesserakt) for adding initial NixOS support!
+---
 
-### OSTree Distros (Silverblue, Kinoite, Bazzite, etc.)
+## 🤝 Upstream Acknowledgment
 
-These distributions are also supported by the same COPR repo as Fedora Workstation. Use the [COPR](https://copr.fedorainfracloud.org/coprs/sunwire/envycontrol/) maintained by [@sunwire](https://github.com/sunwire).
-
-1. Enable the COPR by downloading the `.repo` file from the COPR page, linked above. Put the `.repo` file in `/etc/yum.repos.d`.
-2. Clean package cache with `rpm-ostree cleanup -m`.
-3. Overlay the package with `rpm-ostree install python-envycontrol`.
-4. Reboot to apply the overlay.
-5. Use EnvyControl with `sudo envycontrol -s <MODE>`
-
-### From source
-
-1. Clone this repository with `git clone https://github.com/bayasdev/envycontrol.git` or download the latest tarball from the releases page
-2. Run the script from the root of the repository like this `python ./envycontrol.py -s <MODE>`
-
-💡 Replace `python` with `python3` on Ubuntu/Debian
-
-### Install globally as a pip package
-
-- From the root of the cloned repository run `sudo pip install .`
-- Now you can run `sudo envycontrol -s <MODE>` from any directory to switch graphics modes.
-
-## 👕 GUIs
-
-### Gnome Extension
-
-The [GPU profile selector](https://github.com/LorenzoMorelli/GPU_profile_selector) extension provides a simple way to switch between graphics modes in a few clicks, you can get it from [here](https://extensions.gnome.org/extension/5009/gpu-profile-selector/).
-
-**Make sure to have EnvyControl installed globally!**
-
-![gpu profile selector screenshot](https://github.com/LorenzoMorelli/GPU_profile_selector/raw/main/img/extension_screenshot.png)
-
-### KDE Widget
-
-[Optimus GPU Switcher](https://github.com/enielrodriguez/optimus-gpu-switcher) allows you to change the GPU mode easily, plus its icon is dynamic and serves as an indicator of the current mode.
-
-![Screenshot_20230703_153738](https://github.com/enielrodriguez/optimus-gpu-switcher/assets/31964610/ace0c67e-9428-49fd-895c-48a236727898)
-
-## 💡 Tips
-
-### Black screen on Debian with Nvidia mode?
-
-Try adding `xrandr --auto` to your `~/.xsessionrc`. See https://github.com/bayasdev/envycontrol/issues/173#issuecomment-2205292306, also check the [Wiki](https://github.com/bayasdev/envycontrol/wiki/Frequently-Asked-Questions#what-to-do-if-my-display-manager-is-not-supported) for an alternative solution if this didn't work.
-
-### `nvidia` kernel module is named `nvidia-current` on Debian
-
-If you're running into this situation you can use the `--use-nvidia-current` flag to make EnvyControl use the correct module name.
-
-### Wayland session is missing on Gnome 43+
-
-GDM now requires `NVreg_PreserveVideoMemoryAllocations` kernel parameter which breaks sleep in nvidia and hybrid mode, as well as rtd3 in hybrid mode, so EnvyControl disables it, if you need a Wayland session follow the instructions below
-
-```
-sudo systemctl enable nvidia-{suspend,resume,hibernate}
-sudo ln -s /dev/null /etc/udev/rules.d/61-gdm.rules
-```
-
-### The `/usr/share/sddm/scripts/Xsetup` file is missing on my system
-
-If this ever happens please run `sudo envycontrol --reset-sddm`.
-
-### Files to remove if uninstalling `envycontrol`
-The below files are created by `envycontrol`, and you may want to remove them manually if they are not removed automatically to avoid any incorrect system behaviour.
-* `/var/cache/envycontrol`
-* `/etc/modprobe.d/blacklist-nvidia.conf`
-* `/lib/udev/rules.d/50-remove-nvidia.rules`
-* `/lib/udev/rules.d/80-nvidia-pm.rules`
-* `/etc/X11/xorg.conf`
-* `/etc/X11/xorg.conf.d/10-nvidia.conf`
-* `/etc/modprobe.d/nvidia.conf`
-
-## ❓ Frequently Asked Questions (FAQ)
-
-[Read here](https://github.com/bayasdev/envycontrol/wiki/Frequently-Asked-Questions)
-
-## 🐞 I have a problem
-
-Open an issue and **don't forget to complete all the requested fields!**
-
-## ☕️ Buy me a coffee
-
-[PayPal](https://www.paypal.com/paypalme/bayasdev)
+NVControl is based on the foundational work by [Victor Bayas](https://github.com/bayasdev) ([EnvyControl](https://github.com/bayasdev/envycontrol)) and incorporates fixes and contributions from the open-source community.
